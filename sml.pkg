@@ -1,0 +1,5 @@
+package github.com/sjqtentacles/sml-http
+
+require {
+  github.com/sjqtentacles/sml-uri
+}
