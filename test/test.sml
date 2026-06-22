@@ -77,6 +77,42 @@ struct
       val () = section "malformed input"
       val () = checkBool "bad start line" (true, not (isSome (Http.parseRequest "garbage\r\n\r\n")))
       val () = checkBool "non-numeric status" (true, not (isSome (Http.parseResponse "HTTP/1.1 abc X\r\n\r\n")))
+
+      val () = section "request builders"
+      val rg = Http.get "/a?b=c"
+      val () = checkString "get method" ("GET", #method rg)
+      val () = checkString "get target" ("/a?b=c", #target rg)
+      val () = checkString "get version" ("HTTP/1.1", #version rg)
+      val () = checkString "get serialize" ("GET /a?b=c HTTP/1.1\r\n\r\n", Http.serializeRequest rg)
+      val rp = Http.post "/submit" "hello"
+      val () = checkString "post method" ("POST", #method rp)
+      val () = checkString "post body" ("hello", #body rp)
+      val () = checkBool "post Content-Length"
+                 (true, Headers.get (#headers rp) "content-length" = SOME "5")
+      val () = checkString "post serialize"
+                 ("POST /submit HTTP/1.1\r\nContent-Length: 5\r\n\r\nhello", Http.serializeRequest rp)
+      val rpu = Http.put "/x" "ab"
+      val () = checkBool "put Content-Length"
+                 (true, Headers.get (#headers rpu) "content-length" = SOME "2")
+      val () = checkString "delete method" ("DELETE", #method (Http.delete "/x"))
+
+      val () = section "response builders"
+      val rr = Http.redirect "/new"
+      val () = checkInt "redirect status" (302, #status rr)
+      val () = checkString "redirect reason" ("Found", #reason rr)
+      val () = checkBool "redirect Location"
+                 (true, Headers.get (#headers rr) "location" = SOME "/new")
+      val () = checkString "redirect serialize"
+                 ("HTTP/1.1 302 Found\r\nLocation: /new\r\n\r\n", Http.serializeResponse rr)
+      val () = checkInt "redirectWith 301" (301, #status (Http.redirectWith 301 "/p"))
+      val rh = Http.html "<h1>hi</h1>"
+      val () = checkInt "html status" (200, #status rh)
+      val () = checkString "html body" ("<h1>hi</h1>", #body rh)
+      val () = checkBool "html Content-Type"
+                 (true, Headers.get (#headers rh) "content-type" = SOME "text/html; charset=utf-8")
+      val () = checkString "html serialize"
+                 ("HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: 11\r\n\r\n<h1>hi</h1>",
+                  Http.serializeResponse rh)
     in
       ()
     end

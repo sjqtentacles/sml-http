@@ -44,7 +44,16 @@ val serializeResponse : response -> string
 val targetUri       : request -> Uri.uri
 
 val text            : int -> string -> response   (* text/plain helper *)
+val html            : string -> response          (* 200 text/html *)
 val response        : int -> Headers.headers -> string -> response
+val redirect        : string -> response          (* 302 Found + Location *)
+val redirectWith    : int -> string -> response
+
+(* request builders (version defaults to HTTP/1.1) *)
+val get             : string -> request
+val delete          : string -> request
+val post            : string -> string -> request   (* target body *)
+val put             : string -> string -> request   (* target body *)
 
 (* framing *)
 val decodeBody      : Headers.headers -> string -> string option
@@ -64,6 +73,21 @@ val resp = Http.text 200 "hi"
 (* "HTTP/1.1 200 OK\r\nContent-Type: text/plain; charset=utf-8\r\n
     Content-Length: 2\r\n\r\nhi" *)
 val out  = Http.serializeResponse resp
+```
+
+### Request & response builders
+
+Convenience constructors for common messages. Request builders default the
+version to `HTTP/1.1`; `post`/`put` set `Content-Length` from the body.
+`redirect` produces a `302 Found` with a `Location` header, and `html` a `200`
+`text/html` response.
+
+```sml
+Http.serializeRequest (Http.get "/a?b=c")          (* "GET /a?b=c HTTP/1.1\r\n\r\n" *)
+Http.serializeRequest (Http.post "/submit" "hello")
+  (* "POST /submit HTTP/1.1\r\nContent-Length: 5\r\n\r\nhello" *)
+Http.serializeResponse (Http.redirect "/new")      (* "...302 Found\r\nLocation: /new\r\n\r\n" *)
+Http.serializeResponse (Http.html "<h1>hi</h1>")   (* Content-Type: text/html; charset=utf-8 *)
 ```
 
 ## CLI
