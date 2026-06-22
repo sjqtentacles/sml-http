@@ -108,9 +108,47 @@ make test        # MLton
 make test-poly   # Poly/ML
 make all-tests   # both
 make cli         # build bin/http (MLton)
+make example     # build + run the demo
 ```
 
 **37 deterministic checks**, green under both compilers.
+
+## Demo
+
+[`examples/demo.sml`](examples/demo.sml) builds, serializes, and parses fixed
+HTTP/1.1 messages and shows chunked encoding. It is pure string processing, so
+the output is identical on every run and on both compilers (wire CRLF is shown
+as plain newlines for readability). Run it with:
+
+```
+$ make example
+GET request:
+GET /search?q=ml&lang=sml HTTP/1.1
+Host: example.com
+Accept: text/html
+
+
+POST request (Content-Length set by Http.post):
+POST /submit HTTP/1.1
+Content-Length: 17
+
+name=ml&year=2026
+200 response (Http.text):
+HTTP/1.1 200 OK
+Content-Type: text/plain; charset=utf-8
+Content-Length: 13
+
+Hello, world
+
+Parse a request from the wire:
+  method=GET target=/a/b?x=1 path=/a/b query=x=1 Host=h.example
+
+encodeChunked "Hello, world":
+c
+Hello, world
+0
+
+```
 
 ## Installation
 

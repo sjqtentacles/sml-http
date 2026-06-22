@@ -8,7 +8,7 @@ CLI_MLB    := bin/http.mlb
 SRCS       := $(wildcard $(LIBDIR)/*.sml $(LIBDIR)/*.sig $(VENDOR)/*.sml $(VENDOR)/*.sig) \
               $(wildcard test/*.sml) $(TEST_MLB) $(LIBDIR)/sources.mlb $(VENDOR)/sources.mlb
 
-.PHONY: all test poly test-poly all-tests cli clean
+.PHONY: all test poly test-poly all-tests cli example clean
 
 all: $(BIN)/test-mlton
 
@@ -27,6 +27,12 @@ test-poly: $(BIN)/test-poly
 	$(BIN)/test-poly
 
 all-tests: test test-poly
+
+example: $(BIN)/demo
+	./$(BIN)/demo
+
+$(BIN)/demo: $(SRCS) examples/demo.sml examples/sources.mlb | $(BIN)
+	$(MLTON) -output $@ examples/sources.mlb
 
 cli: $(BIN)/http
 
